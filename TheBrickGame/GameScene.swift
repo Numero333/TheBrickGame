@@ -35,8 +35,6 @@ class GameScene: SKScene, ObservableObject, SKPhysicsContactDelegate {
         makeRacket()
         makeBricks()
         makeFloor()
-        
-        
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -45,7 +43,34 @@ class GameScene: SKScene, ObservableObject, SKPhysicsContactDelegate {
         racket.position = CGPoint(x: location.x, y: 40)
     }
     
+    func didBegin(_ contact: SKPhysicsContact) {
+        if contact.bodyA.node?.name == "Ball" && contact.bodyB.node?.name == "Brick" {
+            removeBrick(contact.bodyB.node!)
+            updateScore(1)
+            
+            if children.count <= 3 {
+                ball.removeFromParent()
+                level += 1
+                
+                //                makeBall()
+                //                makeBricks()
+            }
+        }
+        
+        if contact.bodyA.node?.name == "Ball" && contact.bodyB.node?.name == "Floor" {
+            ball.removeFromParent()
+            isGameOver.toggle()
+        }
+        
+    }
     
+    func removeBrick(_ node: SKNode){
+        node.removeFromParent()
+    }
+    
+    func updateScore(_ newScore: Int) {
+        score += newScore
+    }
     
     func makeBall(){
         ball.name = "Ball"
@@ -53,18 +78,17 @@ class GameScene: SKScene, ObservableObject, SKPhysicsContactDelegate {
         ball.position = CGPoint(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 1.6)
         
         ball.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 24, height: 24))
-        // ball.physicsBody!.allowsRotation = false
+        ball.physicsBody!.allowsRotation = false
         ball.physicsBody!.friction = 0
         ball.physicsBody!.restitution = 1
         ball.physicsBody!.linearDamping = 0
         ball.physicsBody!.contactTestBitMask = ball.physicsBody!.collisionBitMask
         
         addChild(ball)
-        
-        
+
         ball.physicsBody!.applyImpulse(CGVector(dx: 8, dy: -8))
         //ball.physicsBody!.applyImpulse(CGVector(dx: Int.random(in: 1..<20), dy: Int.random(in: 1..<20)))
-
+        
     }
     
     func makeBricks(){
@@ -93,12 +117,13 @@ class GameScene: SKScene, ObservableObject, SKPhysicsContactDelegate {
         
         for index in 0..<numberOfBricks {
             let brick = SKSpriteNode(color: color, size:CGSize(width: 35, height: brickHeight))
-            brick.name = "brick"
+            brick.name = "Brick"
             brick.position = CGPoint(x: xOffset + CGFloat(CGFloat(index) + 0.5) * brickWidth, y: positionY)
             brick.physicsBody = SKPhysicsBody(rectangleOf: brick.frame.size)
             brick.physicsBody!.friction = 0
             brick.physicsBody!.allowsRotation = false
             brick.physicsBody!.isDynamic = false
+            
             addChild(brick)
         }
     }
@@ -106,7 +131,7 @@ class GameScene: SKScene, ObservableObject, SKPhysicsContactDelegate {
     func makeFloor(){
         floor.name = "Floor"
         floor.position = CGPoint(x: UIScreen.main.bounds.width / 2, y: 0)
-        floor.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 24, height: 24))
+        floor.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: UIScreen.main.bounds.width, height: 24))
         floor.physicsBody!.isDynamic = false
         floor.physicsBody!.allowsRotation = false
         floor.physicsBody!.contactTestBitMask = floor.physicsBody!.collisionBitMask
@@ -117,7 +142,7 @@ class GameScene: SKScene, ObservableObject, SKPhysicsContactDelegate {
     func makeRacket(){
         racket.name = "Racket"
         racket.position = CGPoint(x: UIScreen.main.bounds.width / 2, y: 40)
-        racket.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 24, height: 24))
+        racket.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 120, height: 24))
         racket.physicsBody!.isDynamic = false
         racket.physicsBody!.friction = 0
         racket.physicsBody!.restitution = 1
